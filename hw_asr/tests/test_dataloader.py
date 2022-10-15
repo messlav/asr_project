@@ -19,6 +19,14 @@ class TestDataloader(unittest.TestCase):
             )
 
             batch_size = 3
+
+            # check = ds[0]
+            # for k, v in check.items():
+            #     print(k, '\n' ,v)
+
+            # for check in ds:
+            #     print(check['spectrogram'].shape, check['audio'].shape)
+
             batch = collate_fn([ds[i] for i in range(batch_size)])
 
             self.assertIn("spectrogram", batch)  # torch.tensor

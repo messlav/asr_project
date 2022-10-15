@@ -8,6 +8,7 @@ class CTCLossWrapper(CTCLoss):
                 **batch) -> Tensor:
         log_probs_t = torch.transpose(log_probs, 0, 1)
 
+        # print('HERE', type(log_probs_t), type(text_encoded), log_probs_length, type(text_encoded_length))
         return super().forward(
             log_probs=log_probs_t,
             targets=text_encoded,
