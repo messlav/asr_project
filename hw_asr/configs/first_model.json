@@ -1,5 +1,5 @@
 {
-  "name": "one_batch_test",
+  "name": "first_model_on_clean",
   "n_gpu": 1,
   "preprocessing": {
     "sr": 16000,
@@ -11,7 +11,7 @@
     "log_spec": true
   },
   "augmentations": {
-    "wave": ["Gain"],
+    "wave": [],
     "spectrogram": []
   },
   "arch": {
@@ -23,40 +23,56 @@
   },
   "data": {
     "train": {
-      "batch_size": 10,
-      "num_workers": 0,
+      "batch_size": 50,
+      "num_workers": 5,
       "datasets": [
         {
           "type": "LibrispeechDataset",
           "args": {
-            "part": "dev-clean",
+            "part": "train-clean-100",
             "max_audio_length": 20.0,
-            "max_text_length": 200,
-            "limit": 10
+            "max_text_length": 200
+          }
+        },
+        {
+          "type": "LibrispeechDataset",
+          "args": {
+            "part": "train-clean-360",
+            "max_audio_length": 20.0,
+            "max_text_length": 200
           }
         }
       ]
     },
     "val": {
-      "batch_size": 10,
-      "num_workers": 0,
+      "batch_size": 30,
+      "num_workers": 5,
       "datasets": [
         {
           "type": "LibrispeechDataset",
           "args": {
-            "part": "dev-clean",
-            "max_audio_length": 20.0,
-            "max_text_length": 200,
-            "limit": 10
+            "part": "dev-clean"
+          }
+        }
+      ]
+    },
+    "test-clean": {
+      "batch_size": 30,
+      "num_workers": 5,
+      "datasets": [
+        {
+          "type": "LibrispeechDataset",
+          "args": {
+            "part": "test-clean"
           }
         }
       ]
     }
   },
   "optimizer": {
-    "type": "SGD",
+    "type": "Adam",
     "args": {
-      "lr": 1e-2
+      "lr": 3e-4
     }
   },
   "loss": {
@@ -83,7 +99,7 @@
       "steps_per_epoch": 100,
       "epochs": 50,
       "anneal_strategy": "cos",
-      "max_lr": 1e-2,
+      "max_lr": 3e-4,
       "pct_start": 0.2
     }
   },
