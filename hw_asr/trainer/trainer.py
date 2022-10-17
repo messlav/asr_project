@@ -222,8 +222,9 @@ class Trainer(BaseTrainer):
         argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
         bs_results = []
         if self.start_beam_search:
-            for log_probs_line in log_probs:
-                bs_results.append(self.text_encoder.ctc_beam_search(log_probs_line.detach().cpu().exp().numpy(), None))
+            for i, log_probs_line in enumerate(log_probs):
+                bs_results.append(self.text_encoder.ctc_beam_search(log_probs_line.detach().cpu().exp().numpy(),
+                                                                    log_probs_length[i].numpy()))
         else:
             bs_results = [[Hypothesis('', 0)]] * len(log_probs)
         tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path, bs_results))

@@ -32,43 +32,6 @@ class CTCCharTextEncoder(CharTextEncoder):
             last_char = ind
         return ''.join(decoded_input)
 
-    # def ctc_beam_search(self, probs, probs_length,
-    #                     beam_size: int = 100) -> List[Hypothesis]:
-    #     """
-    #     Performs beam search and returns a list of pairs (hypothesis, hypothesis probability).
-    #     """
-    #     def extend_and_merge(dp, proba):
-    #         new_dp = defaultdict(float)
-    #         for (res, last_char), v in dp.items():
-    #             for i in range(len(proba)):
-    #                 if self.ind2char[i] == last_char:
-    #                     new_dp[(res, last_char)] += v * proba[i]
-    #                 else:
-    #                     new_dp[(res + last_char.replace(self.EMPTY_TOK, ''), self.ind2char[i])] += v * proba[i]
-    #
-    #         return new_dp
-    #
-    #     def cut_beams(dp: dict, beam_size: int) -> dict:
-    #         return dict(list(sorted(dp.items(), key=lambda x: x[1]))[-beam_size:])
-    #
-    #     print(probs.shape)
-    #     # print(probs)
-    #     # print(self.ind2char[0])
-    #     assert len(probs.shape) == 2
-    #     char_length, voc_size = probs.shape
-    #     assert voc_size == len(self.ind2char)
-    #     hypos: List[Hypothesis] = []
-    #
-    #     dp = {
-    #         ('', self.EMPTY_TOK): 1.0
-    #     }
-    #     for prob in probs:
-    #         dp = extend_and_merge(dp, prob)
-    #         dp = cut_beams(dp, beam_size)
-    #     hypos = [Hypothesis((res+last_char).strip().replace(self.EMPTY_TOK, ''), proba) for (res, last_char), proba in dp.items()]
-    #
-    #     return sorted(hypos, key=lambda x: x.prob, reverse=True)
-
     def ctc_beam_search(self, probs, probs_length,
                         beam_size: int = 100) -> List[Hypothesis]:
         """
@@ -93,6 +56,7 @@ class CTCCharTextEncoder(CharTextEncoder):
 
         paths = {('', self.EMPTY_TOK): 1.0}
         for prob in probs:
+            prob = prob[:int(probs_length)]
             paths = extend_and_merge(prob, paths)
             paths = cut_beams(paths, beam_size)
 
