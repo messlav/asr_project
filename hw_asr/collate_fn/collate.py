@@ -9,7 +9,6 @@ def collate_fn(dataset_items: List[dict]):
     """
     Collate and pad fields in dataset items
     """
-    # TODO: actually librspeach has sort items by audio and spec length
     audios, spectrograms, durations, texts, text_encodeds, audio_paths = [], [], [], [], [], []
     audios_length, spectrograms_length, text_encodeds_length = [], [], []
     for elem in dataset_items:

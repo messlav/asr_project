@@ -1,6 +1,7 @@
 import random
 from pathlib import Path
 from random import shuffle
+import time
 
 import PIL
 import pandas as pd
@@ -41,6 +42,7 @@ class Trainer(BaseTrainer):
         self.text_encoder = text_encoder
         self.config = config
         self.train_dataloader = dataloaders["train"]
+        self.start_beam_search = False
         if len_epoch is None:
             # epoch-based training
             self.len_epoch = len(self.train_dataloader)
@@ -208,7 +210,6 @@ class Trainer(BaseTrainer):
             *args,
             **kwargs,
     ):
-        # TODO: implement logging of beam search results
         if self.writer is None:
             return
         argmax_inds = log_probs.cpu().argmax(-1).numpy()
@@ -218,13 +219,31 @@ class Trainer(BaseTrainer):
         ]
         argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
         argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
-        tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path))
+        bs_results = []
+        if self.start_beam_search:
+            for log_probs_line in log_probs:
+                bs_results.append(self.text_encoder.ctc_beam_search(log_probs_line.detach().cpu().exp().numpy(), None))
+        else:
+            bs_results = [0] * len(log_probs)
+        tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path, bs_results))
         shuffle(tuples)
         rows = {}
-        for pred, target, raw_pred, audio_path in tuples[:examples_to_log]:
+        for pred, target, raw_pred, audio_path, hypos in tuples[:examples_to_log]:
             target = BaseTextEncoder.normalize_text(target)
             wer = calc_wer(target, pred) * 100
             cer = calc_cer(target, pred) * 100
+
+            wer_beam_search_min, cer_beam_search_min = 1000, 1000
+            pred_beam_search = ''
+            if self.start_beam_search:
+                for elem in hypos:
+                    # print(target, elem.text)
+                    wer_beam_search = calc_wer(target, elem.text) * 100
+                    cer_beam_search = calc_cer(target, elem.text) * 100
+                    if cer_beam_search < cer_beam_search_min:
+                        wer_beam_search_min = wer_beam_search
+                        cer_beam_search_min = cer_beam_search
+                        pred_beam_search = elem.text
 
             rows[Path(audio_path).name] = {
                 "target": target,
@@ -232,8 +251,14 @@ class Trainer(BaseTrainer):
                 "predictions": pred,
                 "wer": wer,
                 "cer": cer,
+                "prediction_beam_search": pred_beam_search,
+                "wer_beam_search": wer_beam_search_min,
+                "cer_beam_search": cer_beam_search_min
             }
-        self.writer.add_table("predictions", pd.DataFrame.from_dict(rows, orient="index"))
+        df = pd.DataFrame.from_dict(rows, orient="index")
+        if df['cer'].mean() < 80:
+            self.start_beam_search = True
+        self.writer.add_table("predictions", df)
 
     def _log_spectrogram(self, spectrogram_batch):
         spectrogram = random.choice(spectrogram_batch.cpu())

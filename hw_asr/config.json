@@ -11,7 +11,15 @@
     "log_spec": true
   },
   "augmentations": {
-    "wave": [],
+    "wave": [{
+      "type": "Gain",
+      "args": {
+        "min_gain_in_db": -15.0,
+        "max_gain_in_db": 5.0,
+        "p": 0.5
+      }
+
+    }],
     "spectrogram": []
   },
   "arch": {
