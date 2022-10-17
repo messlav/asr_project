@@ -238,12 +238,11 @@ class Trainer(BaseTrainer):
             if self.start_beam_search:
                 for elem in hypos:
                     # print(target, elem.text)
-                    wer_beam_search = calc_wer(target, elem.text) * 100
-                    cer_beam_search = calc_cer(target, elem.text) * 100
+                    pred_beam_search = elem.text
+                    cer_beam_search = calc_cer(target, pred_beam_search) * 100
                     if cer_beam_search < cer_beam_search_min:
-                        wer_beam_search_min = wer_beam_search
+                        wer_beam_search_min = calc_wer(target, pred_beam_search) * 100
                         cer_beam_search_min = cer_beam_search
-                        pred_beam_search = elem.text
 
             rows[Path(audio_path).name] = {
                 "target": target,
@@ -253,7 +252,9 @@ class Trainer(BaseTrainer):
                 "cer": cer,
                 "prediction_beam_search": pred_beam_search,
                 "wer_beam_search": wer_beam_search_min,
-                "cer_beam_search": cer_beam_search_min
+                "cer_beam_search": cer_beam_search_min,
+                "max_score_beam_search": hypos[0].prob,
+                "max_score_beam_search_pred": hypos[0].text
             }
         df = pd.DataFrame.from_dict(rows, orient="index")
         if df['cer'].mean() < 80:

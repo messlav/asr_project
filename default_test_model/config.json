@@ -1,0 +1,53 @@
+{
+  "name": "test_wtf1",
+  "n_gpu": 1,
+  "preprocessing": {
+    "sr": 16000,
+    "spectrogram": {
+      "type": "MelSpectrogram",
+      "args": {
+      }
+    },
+    "log_spec": true
+  },
+  "augmentations": {
+    "wave": [],
+    "spectrogram": []
+  },
+  "arch": {
+    "type": "FirstModel",
+    "args": {
+      "n_feats": 128,
+      "fc_hidden": 512
+    }
+  },
+  "data": {
+    "test": {
+      "batch_size": 1337,
+      "num_workers": 1,
+      "datasets": [
+        {
+          "type": "CustomDirAudioDataset",
+          "args":
+          {
+            "audio_dir": "/Users/slavapirogov/asr_project_template/test_data/audio",
+            "transcription_dir": "/Users/slavapirogov/asr_project_template/test_data/transcriptions"}
+        }
+      ],
+      "n_jobs": 1
+    }
+  },
+  "trainer": {
+    "epochs": 50,
+    "save_dir": "saved/",
+    "save_period": 5,
+    "verbosity": 2,
+    "monitor": "min val_loss",
+    "early_stop": 100,
+    "visualize": "wandb",
+    "wandb_project": "asr_project",
+    "len_epoch": 100,
+    "grad_norm_clip": 10
+  }
+}
+
