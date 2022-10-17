@@ -2,9 +2,10 @@
 
 ## Installation guide
 
-< Write your installation guide here >
 
 ```shell
+git clone https://github.com/messlav/asr_project.git
+cd asr_project
 pip install -r ./requirements.txt
 ```
 
