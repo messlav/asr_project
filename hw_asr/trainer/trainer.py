@@ -16,6 +16,7 @@ from hw_asr.base.base_text_encoder import BaseTextEncoder
 from hw_asr.logger.utils import plot_spectrogram_to_buf
 from hw_asr.metric.utils import calc_cer, calc_wer
 from hw_asr.utils import inf_loop, MetricTracker
+from hw_asr.text_encoder.ctc_char_text_encoder import Hypothesis
 
 
 class Trainer(BaseTrainer):
@@ -224,7 +225,7 @@ class Trainer(BaseTrainer):
             for log_probs_line in log_probs:
                 bs_results.append(self.text_encoder.ctc_beam_search(log_probs_line.detach().cpu().exp().numpy(), None))
         else:
-            bs_results = [0] * len(log_probs)
+            bs_results = [[Hypothesis('', 0)]] * len(log_probs)
         tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path, bs_results))
         shuffle(tuples)
         rows = {}
